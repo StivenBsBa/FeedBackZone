@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "114223512146",
+    "project_id": "feedbackzone-f8342",
+    "storage_bucket": "feedbackzone-f8342.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:114223512146:android:62dda164be1942fbb3bd8b",
+        "android_client_info": {
+          "package_name": "com.example.feedbackzone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBz5IFGzXajfWQ6mZ-4XNhbhbMJdVIkqR0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
