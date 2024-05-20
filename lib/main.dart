@@ -1,5 +1,5 @@
-import 'package:feedbackzoom/pantallas/IniciarRegistrar/Login.dart';
-import 'package:feedbackzoom/pantallas/IniciarRegistrar/Register.dart';
+import 'package:feedbackzone/pantallas/IniciarRegistrar/Login.dart';
+import 'package:feedbackzone/pantallas/IniciarRegistrar/Register.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 

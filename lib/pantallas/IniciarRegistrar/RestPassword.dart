@@ -1,5 +1,5 @@
-import 'package:feedbackzoom/pantallas/IniciarRegistrar/Login.dart';
-import 'package:feedbackzoom/services/ManejarInfoUser.dart';
+import 'package:feedbackzone/pantallas/IniciarRegistrar/Login.dart';
+import 'package:feedbackzone/services/ManejarInfoUser.dart';
 import 'package:flutter/material.dart';
 
 class EnviarCodigo extends StatefulWidget {

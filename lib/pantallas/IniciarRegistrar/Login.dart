@@ -1,7 +1,7 @@
-import 'package:feedbackzoom/pantallas/IniciarRegistrar/Register.dart';
-import 'package:feedbackzoom/pantallas/IniciarRegistrar/RestPassword.dart';
-import 'package:feedbackzoom/pantallas/InicioApp.dart';
-import 'package:feedbackzoom/services/ManejarInfoUser.dart';
+import 'package:feedbackzone/pantallas/IniciarRegistrar/Register.dart';
+import 'package:feedbackzone/pantallas/IniciarRegistrar/RestPassword.dart';
+import 'package:feedbackzone/pantallas/InicioApp.dart';
+import 'package:feedbackzone/services/ManejarInfoUser.dart';
 import 'package:flutter/material.dart';
 
 class Login extends StatefulWidget {

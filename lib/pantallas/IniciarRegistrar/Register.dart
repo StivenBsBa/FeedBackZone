@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:feedbackzoom/services/ManejarInfoUser.dart';
+import 'package:feedbackzone/services/ManejarInfoUser.dart';
 import 'package:flutter/material.dart';
-import 'package:feedbackzoom/pantallas/IniciarRegistrar/Login.dart';
+import 'package:feedbackzone/pantallas/IniciarRegistrar/Login.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});

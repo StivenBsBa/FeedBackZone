@@ -1,5 +1,5 @@
-import 'package:feedbackzoom/componentes/BarraNavegation.dart';
-import 'package:feedbackzoom/pantallas/Mensaje.dart';
+import 'package:feedbackzone/componentes/BarraNavegation.dart';
+import 'package:feedbackzone/pantallas/Mensaje.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; 
 import 'package:cloud_firestore/cloud_firestore.dart'; 
