@@ -213,7 +213,6 @@ class _RegisterState extends State<Register> {
                                 'Error: La contraseña debe tener al menos 8 caracteres');
                           } else {
                             // Verificar si la edad es mayor a 15 años y menor a 70 años
-                            DateTime currentDate = DateTime.now();
                             DateTime maximumDate = DateTime(2010, 1, 1);
                             if (selectedDate!.isAfter(maximumDate)) {
                               // Mostrar un mensaje de error si la edad no está dentro del rango permitido

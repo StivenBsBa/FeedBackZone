@@ -1,23 +1,33 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-Future<void> RegistrarPublicacion(
-    String tituloPublicacion,
-    String contenidoPublicacion,
-    String descripcionPublicacion,
-    String imagenUrl) async {
-  try {
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
+
+class CrearPublicacionBackend {
+  Future<String> uploadImageToFirebase(File imageFile) async {
+    String fileName = 'images/${DateTime.now().millisecondsSinceEpoch}.png';
+    Reference storageReference = FirebaseStorage.instance.ref().child(fileName);
+
+    UploadTask uploadTask = storageReference.putFile(imageFile);
+    await uploadTask;
+
+    String downloadURL = await storageReference.getDownloadURL();
+    return downloadURL;
+  }
+
+  Future<void> registrarPublicacion(
+      String imageUrl, String titulo, String descripcion) async {
     User? usuario = FirebaseAuth.instance.currentUser;
 
     if (usuario != null) {
       FirebaseFirestore firestore = FirebaseFirestore.instance;
 
       await firestore.collection('publicaciones').add({
-        'userId': usuario.uid,
-        'titulo': tituloPublicacion,
-        'contenido': contenidoPublicacion,
-        'descripcion': descripcionPublicacion,
-        'imagenUrl': imagenUrl,
+        'UserId': usuario.uid,
+        'titulo': titulo,
+        'descripcion': descripcion,
+        'imagenUrl': imageUrl,
         'fecha_publicacion': DateTime.now(),
         'likes': 0,
         'comentarios': [],
@@ -27,8 +37,6 @@ Future<void> RegistrarPublicacion(
     } else {
       print('Error: No hay usuario autenticado');
     }
-  } catch (e) {
-    print('Error al crear la publicación con imagen: $e');
   }
 }
 

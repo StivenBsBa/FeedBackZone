@@ -1,4 +1,3 @@
-import 'package:feedbackzone/componentes/MostrarPublicacion.dart';
 import 'package:flutter/material.dart';
 
 class Mensajes extends StatelessWidget {
@@ -8,10 +7,22 @@ class Mensajes extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Mensajes"),
+        title: Text(
+          "Mensajes",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        centerTitle: true, // Centra el título en la AppBar
+        backgroundColor: Colors.lightBlue, // Color azul claro para todo el AppBar
         automaticallyImplyLeading: false, // Oculta la flecha hacia atrás en la barra de navegación
+        elevation: 0, // Sin sombra ni borde para el AppBar
       ),
-      body: Mostrarpublicacion(), // Utiliza el componente aquí
+      body: Center(
+        child: Text("Esta pantalla está en producción"),
+      ),
     );
   }
 }

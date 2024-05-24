@@ -107,17 +107,22 @@ class Backend {
   Future<List<Map<String, dynamic>>> obtenerAmigosSugeridos(String query) async {
     List<Map<String, dynamic>> amigosSugeridos = [];
     try {
-      QuerySnapshot snapshot = await _firestore.collection('usuarios')
-          .where('username', isGreaterThanOrEqualTo: query)
-          .where('username', isLessThanOrEqualTo: query + '\uf8ff')
-          .get();
+      User? currentUser = _auth.currentUser;
+      if (currentUser != null) {
+        QuerySnapshot snapshot = await _firestore.collection('usuarios')
+            .where('username', isGreaterThanOrEqualTo: query)
+            .where('username', isLessThanOrEqualTo: query + '\uf8ff')
+            .get();
 
-      for (var doc in snapshot.docs) {
-        amigosSugeridos.add({
-          'uid': doc.id,
-          'username': doc['username'],
-          'FtPerfil': doc['FtPerfil'],
-        });
+        for (var doc in snapshot.docs) {
+          if (doc.id != currentUser.uid) { // Filtra el usuario autenticado
+            amigosSugeridos.add({
+              'uid': doc.id,
+              'username': doc['username'],
+              'FtPerfil': doc['FtPerfil'],
+            });
+          }
+        }
       }
     } catch (e) {
       print('Error al obtener amigos sugeridos: $e');
@@ -142,5 +147,39 @@ class Backend {
   }
 }
 
-
 //manejar informacion del usaurio autenticado
+Future<void> obtenerInformacionUsuario() async {
+  try {
+    FirebaseAuth auth = FirebaseAuth.instance;
+
+    // Verifica si hay un usuario autenticado
+    User? user = auth.currentUser;
+    
+    if (user != null) {
+      // El usuario está autenticado, obtén su UID
+      String UserId = user.uid;
+
+      // Accede a Firestore y obtén los datos del usuario
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentSnapshot userSnapshot = await firestore.collection('usuarios').doc(UserId).get();
+
+      // Verifica si el documento existe
+      if (userSnapshot.exists) {
+        // Accede a los datos del usuario
+        Map<String, dynamic> userData = userSnapshot.data() as Map<String, dynamic>;
+        print('Información del usuario:');
+        print('Username: ${userData['username']}');
+        print('Email: ${userData['email']}');
+        print('Género: ${userData['genero']}');
+        print('Fecha de Nacimiento: ${userData['fechaNacimiento']}');
+      } else {
+        print('Error: No se encontró información para el usuario actual');
+      }
+    } else {
+      print('Error: No hay usuario autenticado');
+    }
+  } catch (e) {
+    print('Error al obtener la información del usuario: $e');
+  }
+}
+

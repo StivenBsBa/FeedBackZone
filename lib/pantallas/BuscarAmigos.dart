@@ -9,7 +9,6 @@ class BuscarAmigos extends StatefulWidget {
 }
 
 class _BuscarAmigosState extends State<BuscarAmigos> {
-  int _currentIndex = 2;
   final Backend _backend = Backend();
   List<Map<String, dynamic>> _amigosSugeridos = [];
   String _query = '';
@@ -43,7 +42,6 @@ class _BuscarAmigosState extends State<BuscarAmigos> {
 
   void _onTabTapped(int index) {
     setState(() {
-      _currentIndex = index;
     });
   }
 
@@ -51,9 +49,18 @@ class _BuscarAmigosState extends State<BuscarAmigos> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Buscar Amigos', style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        title: Text(
+          "Buscar Amigos",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        centerTitle: true, // Centra el título en la AppBar
+        backgroundColor: Colors.lightBlue, // Color azul claro para todo el AppBar
         automaticallyImplyLeading: false, // Oculta la flecha hacia atrás en la barra de navegación
+        elevation: 0, // Sin sombra ni borde para el AppBar
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -114,7 +121,7 @@ class _BuscarAmigosState extends State<BuscarAmigos> {
                                   onPressed: () {
                                     _backend.enviarSolicitudAmistad(_amigosSugeridos[index]['uid']!);
                                   },
-                                  child: const Text('Seguir Amigo', style: TextStyle(fontSize: 12)),
+                                  child: const Text('Seguir', style: TextStyle(fontSize: 12)),
                                 ),
                               ),
                             );

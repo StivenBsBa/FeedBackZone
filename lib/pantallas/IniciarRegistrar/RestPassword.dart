@@ -10,7 +10,6 @@ class EnviarCodigo extends StatefulWidget {
 }
 
 class _EnviarCodigoState extends State<EnviarCodigo> {
-  bool _usarCorreo = true;
   TextEditingController _emailController = TextEditingController();
   GlobalKey<FormState> _formKey =
       GlobalKey<FormState>(); // Clave para el formulario
