@@ -1,3 +1,5 @@
+import 'package:feedbackzone/componentes/VerUsuario.dart';
+import 'package:feedbackzone/services/ManejarInfoUser.dart';
 import 'package:flutter/material.dart';
 import 'package:feedbackzone/componentes/CrearPublicacion.dart';
 import 'package:feedbackzone/componentes/MostrarPublicacion.dart';
@@ -13,6 +15,8 @@ class Perfil extends StatefulWidget {
 
 class _PerfilState extends State<Perfil> {
   Map<String, dynamic>? userData;
+  List<String> seguidores = [];
+  List<String> siguiendo = [];
 
   @override
   void initState() {
@@ -27,8 +31,12 @@ class _PerfilState extends State<Perfil> {
         String userId = user.uid;
         DocumentSnapshot userSnapshot = await FirebaseFirestore.instance.collection('usuarios').doc(userId).get();
         if (userSnapshot.exists) {
+          List<String> seguidoresList = await BuscarSeguirAmigo().obtenerSeguidores(userId);
+          List<String> siguiendoList = await BuscarSeguirAmigo().obtenerSeguidos(userId);
           setState(() {
             userData = userSnapshot.data() as Map<String, dynamic>;
+            seguidores = seguidoresList;
+            siguiendo = siguiendoList;
           });
         } else {
           _mostrarError('No se encontró información para el usuario actual');
@@ -50,7 +58,7 @@ class _PerfilState extends State<Perfil> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Perfil Usuario'),
+        title: const Text('Perfil Usuario'),
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
@@ -58,26 +66,28 @@ class _PerfilState extends State<Perfil> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             CircleAvatar(
-              backgroundImage: userData != null ? NetworkImage(userData!['FtPerfil']) : AssetImage('assets/images/placeholder_image.jpg') as ImageProvider,
+              backgroundImage: userData != null
+                  ? NetworkImage(userData!['FtPerfil'])
+                  : const AssetImage('assets/images/placeholder_image.jpg') as ImageProvider,
               radius: 50,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               userData != null ? userData!['username'] : 'Nombre de Usuario',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildUserInfoContainer('Seguidores', userData != null ? userData!['Seguidores'] : 0),
-                SizedBox(width: 20),
-                _buildUserInfoContainer('Siguiendo', userData != null ? userData!['Siguiendo'] : 0),
+                _buildUserInfoContainer('Seguidores', seguidores.length),
+                const SizedBox(width: 20),
+                _buildUserInfoContainer('Siguiendo', siguiendo.length),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -85,14 +95,14 @@ class _PerfilState extends State<Perfil> {
                   MaterialPageRoute(builder: (context) => CrearPublicacion()),
                 );
               },
-              child: Text('Crear Publicación'),
+              child: const Text('Crear Publicación'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             SizedBox(
               height: 400,
               child: MostrarPublicacion(UserId: userData != null ? userData!['UserId'] : ''),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -109,7 +119,7 @@ class _PerfilState extends State<Perfil> {
         }
       },
       child: Container(
-        padding: EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
           color: Colors.grey[200],
           borderRadius: BorderRadius.circular(10.0),
@@ -118,12 +128,12 @@ class _PerfilState extends State<Perfil> {
           children: [
             Text(
               '$count',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             Text(
               label,
-              style: TextStyle(fontSize: 16, color: Colors.blue),
+              style: const TextStyle(fontSize: 16, color: Colors.blue),
             ),
           ],
         ),
@@ -134,20 +144,21 @@ class _PerfilState extends State<Perfil> {
   void _navigateToSeguidores() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SeguidoresScreen(seguidores: userData != null ? userData!['Seguidores'] : 0)),
+      MaterialPageRoute(builder: (context) => SeguidoresScreen(seguidores: seguidores)),
     );
   }
 
   void _navigateToSiguiendo() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SiguiendoScreen(siguiendo: userData != null ? userData!['Siguiendo'] : 0)),
+      MaterialPageRoute(builder: (context) => SiguiendoScreen(siguiendo: siguiendo)),
     );
   }
 }
 
+
 class SeguidoresScreen extends StatelessWidget {
-  final int seguidores;
+  final List<String> seguidores;
 
   const SeguidoresScreen({required this.seguidores});
 
@@ -155,19 +166,45 @@ class SeguidoresScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Seguidores'),
+        title: const Text('Seguidores'),
       ),
-      body: Center(
-        child: seguidores > 0
-            ? Text('Se está creando esta lista.')
-            : Text('Aún nadie te sigue'),
-      ),
+      body: seguidores.isNotEmpty
+          ? ListView.builder(
+              itemCount: seguidores.length,
+              itemBuilder: (context, index) {
+                return FutureBuilder<DocumentSnapshot>(
+                  future: FirebaseFirestore.instance.collection('usuarios').doc(seguidores[index]).get(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData) {
+                      return const Center(child: Text('No se encontró información del usuario'));
+                    }
+                    var user = snapshot.data!;
+                    return UsuarioItem(
+                      userData: {
+                        'username': user['username'],
+                        'FtPerfil': user['FtPerfil'],
+                      },
+                      seSiguen: false, // Define los estados según corresponda
+                      esSeguido: true, // En este caso, están siguiendo al usuario
+                      teSigue: false, // En este caso, el usuario no te sigue
+                      onPressed: (bool seguir) {
+                        // Aquí puedes manejar la lógica de seguimiento/deseguimiento
+                      },
+                    );
+                  },
+                );
+              },
+            )
+          : const Center(child: Text('Aún nadie te sigue')),
     );
   }
 }
 
 class SiguiendoScreen extends StatelessWidget {
-  final int siguiendo;
+  final List<String> siguiendo;
 
   const SiguiendoScreen({required this.siguiendo});
 
@@ -175,13 +212,40 @@ class SiguiendoScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Siguiendo'),
+        title: const Text('Siguiendo'),
       ),
-      body: Center(
-        child: siguiendo > 0
-            ? Text('Se está creando esta lista.')
-            : Text('Aún no sigues a nadie'),
-      ),
+      body: siguiendo.isNotEmpty
+          ? ListView.builder(
+              itemCount: siguiendo.length,
+              itemBuilder: (context, index) {
+                return FutureBuilder<DocumentSnapshot>(
+                  future: FirebaseFirestore.instance.collection('usuarios').doc(siguiendo[index]).get(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData) {
+                      return const Center(child: Text('No se encontró información del usuario'));
+                    }
+                    var user = snapshot.data!;
+                    return UsuarioItem(
+                      userData: {
+                        'username': user['username'],
+                        'FtPerfil': user['FtPerfil'],
+                      },
+                      seSiguen: true, // Define los estados según corresponda
+                      esSeguido: false, // En este caso, no estás siguiendo al usuario
+                      teSigue: true, // En este caso, el usuario te sigue
+                      onPressed: (bool seguir) {
+                        // Aquí puedes manejar la lógica de seguimiento/deseguimiento
+                      },
+                    );
+                  },
+                );
+              },
+            )
+          : const Center(child: Text('Aún no sigues a nadie')),
     );
   }
 }
+  

@@ -241,8 +241,8 @@ class DetallePublicacion extends StatelessWidget {
                       ),
                       SizedBox(height: 2.0),
                       Text(
-                        // Aquí podrías agregar un formato de fecha para mostrar el tiempo
-                        "Hace 1 hora",
+                        calcularTiempoTranscurrido(
+                            publicacion['fecha_publicacion']),
                         style: TextStyle(
                           color: Colors.grey,
                           fontSize: 12.0,
@@ -326,4 +326,3 @@ String calcularTiempoTranscurrido(Timestamp fechaPublicacion) {
     return DateFormat('dd/MM/yyyy').format(fecha);
   }
 }
-

@@ -5,8 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 Future<String?> _checkEmailExists(String email) async {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  QuerySnapshot<Map<String, dynamic>> querySnapshot =
-      await firestore.collection('usuarios').where('email', isEqualTo: email).get();
+  QuerySnapshot<Map<String, dynamic>> querySnapshot = await firestore
+      .collection('usuarios')
+      .where('email', isEqualTo: email)
+      .get();
 
   if (querySnapshot.docs.isNotEmpty) {
     // Si encuentra un correo electrónico existente, devuelve el ID del documento
@@ -18,7 +20,8 @@ Future<String?> _checkEmailExists(String email) async {
 }
 
 //Registrar Usuario
-Future<void> registrarUsuario(String username, String email, String password, String genero, DateTime? fechaNacimiento) async {
+Future<void> registrarUsuario(String username, String email, String password,
+    String genero, DateTime? fechaNacimiento) async {
   try {
     FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -46,11 +49,14 @@ Future<void> registrarUsuario(String username, String email, String password, St
       int Seguidores = 0;
       int siguiendo = 0;
       if (genero == 'Hombre') {
-        FtPerfil = 'https://w7.pngwing.com/pngs/945/530/png-transparent-male-avatar-boy-face-man-user-flat-classy-users-icon.png'; // Reemplaza con la URL de la imagen para hombres
+        FtPerfil =
+            'https://w7.pngwing.com/pngs/945/530/png-transparent-male-avatar-boy-face-man-user-flat-classy-users-icon.png'; // Reemplaza con la URL de la imagen para hombres
       } else if (genero == 'Mujer') {
-        FtPerfil = 'https://cdn-icons-png.flaticon.com/512/4139/4139951.png'; // Reemplaza con la URL de la imagen para mujeres
+        FtPerfil =
+            'https://cdn-icons-png.flaticon.com/512/4139/4139951.png'; // Reemplaza con la URL de la imagen para mujeres
       } else {
-        FtPerfil = 'https://cdn-icons-png.flaticon.com/512/456/456212.png'; // URL de imagen por defecto si no se especifica género
+        FtPerfil =
+            'https://cdn-icons-png.flaticon.com/512/456/456212.png'; // URL de imagen por defecto si no se especifica género
       }
 
       await firestore.collection('usuarios').doc(user.uid).set({
@@ -61,7 +67,8 @@ Future<void> registrarUsuario(String username, String email, String password, St
         'fechaNacimiento': fechaNacimiento,
         'Seguidores': Seguidores,
         'Siguiendo': siguiendo,
-        'FtPerfil': FtPerfil, // Asigna la URL de la imagen de icono según el género
+        'FtPerfil':
+            FtPerfil, // Asigna la URL de la imagen de icono según el género
       });
 
       print('Usuario registrado exitosamente');
@@ -75,9 +82,11 @@ Future<void> registrarUsuario(String username, String email, String password, St
 
 //iniciarsesion
 class LoginUserAuth {
-  static Future<UserCredential> signInWithEmailAndPassword(String email, String password) async {
+  static Future<UserCredential> signInWithEmailAndPassword(
+      String email, String password) async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -85,22 +94,29 @@ class LoginUserAuth {
     } catch (e) {
       throw e;
     }
-  } 
+  }
 }
 
 // Función para enviar un correo electrónico de restablecimiento de contraseña
 Future<void> enviarCorreoRecuperacion(String email) async {
   try {
     await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-    print('Se ha enviado un correo electrónico de restablecimiento de contraseña a $email');
+    print(
+        'Se ha enviado un correo electrónico de restablecimiento de contraseña a $email');
   } catch (error) {
-    print('Ha ocurrido un error al enviar el correo electrónico de restablecimiento: $error');
+    print(
+        'Ha ocurrido un error al enviar el correo electrónico de restablecimiento: $error');
   }
-
 }
 
-//Buscar amigos
-class Backend {
+
+
+
+//Busmar y seguir amigo
+
+
+
+class BuscarSeguirAmigo {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -109,17 +125,27 @@ class Backend {
     try {
       User? currentUser = _auth.currentUser;
       if (currentUser != null) {
-        QuerySnapshot snapshot = await _firestore.collection('usuarios')
+        QuerySnapshot snapshot = await _firestore
+            .collection('usuarios')
             .where('username', isGreaterThanOrEqualTo: query)
             .where('username', isLessThanOrEqualTo: query + '\uf8ff')
             .get();
 
+        List<String> seguidosIds = await obtenerSeguidos(currentUser.uid);
+        List<String> seguidoresIds = await obtenerSeguidores(currentUser.uid);
+
         for (var doc in snapshot.docs) {
-          if (doc.id != currentUser.uid) { // Filtra el usuario autenticado
+          if (doc.id != currentUser.uid) {
+            bool esSeguido = seguidosIds.contains(doc.id);
+            bool teSigue = seguidoresIds.contains(doc.id);
+            bool seSiguen = esSeguido && teSigue;
             amigosSugeridos.add({
               'uid': doc.id,
               'username': doc['username'],
               'FtPerfil': doc['FtPerfil'],
+              'esSeguido': esSeguido,
+              'teSigue': teSigue,
+              'seSiguen': seSiguen,
             });
           }
         }
@@ -130,22 +156,64 @@ class Backend {
     return amigosSugeridos;
   }
 
-  Future<void> enviarSolicitudAmistad(String userIdAmigo) async {
+  Future<void> seguirAmigo(String userIdAmigo) async {
     try {
       User? user = _auth.currentUser;
       if (user != null) {
-        await _firestore.collection('solicitudesAmistad').add({
-          'de': user.uid,
-          'para': userIdAmigo,
-          'estado': 'pendiente',
+        await _firestore.collection('seguidores').add({
+          'seguidorId': user.uid,
+          'seguidoId': userIdAmigo,
           'timestamp': FieldValue.serverTimestamp(),
         });
       }
     } catch (e) {
-      print('Error al enviar solicitud de amistad: $e');
+      print('Error al seguir amigo: $e');
     }
   }
+
+  Future<void> dejarDeSeguirAmigo(String userIdAmigo) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        QuerySnapshot snapshot = await _firestore
+            .collection('seguidores')
+            .where('seguidorId', isEqualTo: user.uid)
+            .where('seguidoId', isEqualTo: userIdAmigo)
+            .get();
+
+        for (var doc in snapshot.docs) {
+          await _firestore.collection('seguidores').doc(doc.id).delete();
+        }
+      }
+    } catch (e) {
+      print('Error al dejar de seguir amigo: $e');
+    }
+  }
+
+  Future<List<String>> obtenerSeguidos(String userId) async {
+    QuerySnapshot result = await _firestore
+        .collection('seguidores')
+        .where('seguidorId', isEqualTo: userId)
+        .get();
+    return result.docs.map((doc) => doc['seguidoId'].toString()).toList();
+  }
+
+  Future<List<String>> obtenerSeguidores(String userId) async {
+    QuerySnapshot result = await _firestore
+        .collection('seguidores')
+        .where('seguidoId', isEqualTo: userId)
+        .get();
+    return result.docs.map((doc) => doc['seguidorId'].toString()).toList();
+  }
 }
+
+
+
+
+
+
+
+
 
 //manejar informacion del usaurio autenticado
 Future<void> obtenerInformacionUsuario() async {
@@ -154,19 +222,21 @@ Future<void> obtenerInformacionUsuario() async {
 
     // Verifica si hay un usuario autenticado
     User? user = auth.currentUser;
-    
+
     if (user != null) {
       // El usuario está autenticado, obtén su UID
       String UserId = user.uid;
 
       // Accede a Firestore y obtén los datos del usuario
       FirebaseFirestore firestore = FirebaseFirestore.instance;
-      DocumentSnapshot userSnapshot = await firestore.collection('usuarios').doc(UserId).get();
+      DocumentSnapshot userSnapshot =
+          await firestore.collection('usuarios').doc(UserId).get();
 
       // Verifica si el documento existe
       if (userSnapshot.exists) {
         // Accede a los datos del usuario
-        Map<String, dynamic> userData = userSnapshot.data() as Map<String, dynamic>;
+        Map<String, dynamic> userData =
+            userSnapshot.data() as Map<String, dynamic>;
         print('Información del usuario:');
         print('Username: ${userData['username']}');
         print('Email: ${userData['email']}');
@@ -182,4 +252,3 @@ Future<void> obtenerInformacionUsuario() async {
     print('Error al obtener la información del usuario: $e');
   }
 }
-

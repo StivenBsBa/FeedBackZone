@@ -1,5 +1,6 @@
-import 'package:feedbackzone/services/ManejarInfoUser.dart';
+import 'package:feedbackzone/componentes/VerUsuario.dart';
 import 'package:flutter/material.dart';
+import 'package:feedbackzone/services/ManejarInfoUser.dart';
 
 class BuscarAmigos extends StatefulWidget {
   const BuscarAmigos({Key? key}) : super(key: key);
@@ -9,7 +10,7 @@ class BuscarAmigos extends StatefulWidget {
 }
 
 class _BuscarAmigosState extends State<BuscarAmigos> {
-  final Backend _backend = Backend();
+  final BuscarSeguirAmigo _buscarSeguirAmigo = BuscarSeguirAmigo();
   List<Map<String, dynamic>> _amigosSugeridos = [];
   String _query = '';
   bool _isLoading = false;
@@ -25,8 +26,9 @@ class _BuscarAmigosState extends State<BuscarAmigos> {
       _isLoading = true;
     });
 
-    List<Map<String, dynamic>> amigos = await _backend.obtenerAmigosSugeridos(_query);
-    
+    List<Map<String, dynamic>> amigos =
+        await _buscarSeguirAmigo.obtenerAmigosSugeridos(_query);
+
     setState(() {
       _amigosSugeridos = amigos;
       _isLoading = false;
@@ -40,16 +42,11 @@ class _BuscarAmigosState extends State<BuscarAmigos> {
     _cargarAmigosSugeridos();
   }
 
-  void _onTabTapped(int index) {
-    setState(() {
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Buscar Amigos",
           style: TextStyle(
             color: Colors.white,
@@ -57,10 +54,10 @@ class _BuscarAmigosState extends State<BuscarAmigos> {
             fontSize: 20,
           ),
         ),
-        centerTitle: true, // Centra el título en la AppBar
-        backgroundColor: Colors.lightBlue, // Color azul claro para todo el AppBar
-        automaticallyImplyLeading: false, // Oculta la flecha hacia atrás en la barra de navegación
-        elevation: 0, // Sin sombra ni borde para el AppBar
+        centerTitle: true,
+        backgroundColor: Colors.lightBlue,
+        automaticallyImplyLeading: false,
+        elevation: 0,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -74,12 +71,12 @@ class _BuscarAmigosState extends State<BuscarAmigos> {
               ),
               child: Row(
                 children: [
-                  SizedBox(width: 10),
-                  Icon(Icons.search, color: Colors.grey),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
+                  const Icon(Icons.search, color: Colors.grey),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         hintText: 'Buscar amigos...',
                         border: InputBorder.none,
                       ),
@@ -87,7 +84,7 @@ class _BuscarAmigosState extends State<BuscarAmigos> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.clear, color: Colors.grey),
+                    icon: const Icon(Icons.clear, color: Colors.grey),
                     onPressed: () {
                       setState(() {
                         _query = '';
@@ -95,35 +92,58 @@ class _BuscarAmigosState extends State<BuscarAmigos> {
                       _cargarAmigosSugeridos();
                     },
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                 ],
               ),
             ),
           ),
           _isLoading
-              ? Expanded(
+              ? const Expanded(
                   child: Center(child: CircularProgressIndicator()),
                 )
               : Expanded(
                   child: _amigosSugeridos.isEmpty
-                      ? Center(child: Text('No se encontraron resultados'))
+                      ? const Center(
+                          child: Text('No se encontraron resultados'))
                       : ListView.builder(
                           itemCount: _amigosSugeridos.length,
                           itemBuilder: (context, index) {
-                            return Card(
-                              margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundImage: NetworkImage(_amigosSugeridos[index]['FtPerfil']!),
-                                ),
-                                title: Text(_amigosSugeridos[index]['username']!),
-                                trailing: ElevatedButton(
-                                  onPressed: () {
-                                    _backend.enviarSolicitudAmistad(_amigosSugeridos[index]['uid']!);
-                                  },
-                                  child: const Text('Seguir', style: TextStyle(fontSize: 12)),
-                                ),
-                              ),
+                            bool esSeguido =
+                                _amigosSugeridos[index]['esSeguido'] ?? false;
+                            bool teSigue =
+                                _amigosSugeridos[index]['teSigue'] ?? false;
+                            bool seSiguen =
+                                _amigosSugeridos[index]['seSiguen'] ?? false;
+
+                            return UsuarioItem(
+                              userData: _amigosSugeridos[index],
+                              seSiguen: seSiguen,
+                              esSeguido: esSeguido,
+                              teSigue: teSigue,
+                              onPressed: (bool esSeguido) async {
+                                if (esSeguido) {
+                                  await _buscarSeguirAmigo
+                                      .dejarDeSeguirAmigo(
+                                          _amigosSugeridos[index]['uid']);
+                                  setState(() {
+                                    _amigosSugeridos[index]['esSeguido'] =
+                                        false;
+                                    _amigosSugeridos[index]['seSiguen'] =
+                                        false;
+                                  });
+                                } else {
+                                  await _buscarSeguirAmigo.seguirAmigo(
+                                      _amigosSugeridos[index]['uid']);
+                                  setState(() {
+                                    _amigosSugeridos[index]['esSeguido'] =
+                                        true;
+                                    if (_amigosSugeridos[index]['teSigue']) {
+                                      _amigosSugeridos[index]['seSiguen'] =
+                                          true;
+                                    }
+                                  });
+                                }
+                              },
                             );
                           },
                         ),
