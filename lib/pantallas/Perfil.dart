@@ -1,10 +1,10 @@
-import 'package:feedbackzone/componentes/VerUsuario.dart';
-import 'package:feedbackzone/services/ManejarInfoUser.dart';
 import 'package:flutter/material.dart';
-import 'package:feedbackzone/componentes/CrearPublicacion.dart';
-import 'package:feedbackzone/componentes/MostrarPublicacion.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:feedbackzone/componentes/CrearPublicacion.dart';
+import 'package:feedbackzone/componentes/MostrarPublicacion.dart';
+import 'package:feedbackzone/componentes/VerUsuario.dart';
+import 'package:feedbackzone/services/ManejarInfoUser.dart';
 
 class Perfil extends StatefulWidget {
   const Perfil({Key? key}) : super(key: key);
@@ -29,10 +29,15 @@ class _PerfilState extends State<Perfil> {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         String userId = user.uid;
-        DocumentSnapshot userSnapshot = await FirebaseFirestore.instance.collection('usuarios').doc(userId).get();
+        DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(userId)
+            .get();
         if (userSnapshot.exists) {
-          List<String> seguidoresList = await BuscarSeguirAmigo().obtenerSeguidores(userId);
-          List<String> siguiendoList = await BuscarSeguirAmigo().obtenerSeguidos(userId);
+          List<String> seguidoresList =
+              await BuscarSeguirAmigo().obtenerSeguidores(userId);
+          List<String> siguiendoList =
+              await BuscarSeguirAmigo().obtenerSeguidos(userId);
           setState(() {
             userData = userSnapshot.data() as Map<String, dynamic>;
             seguidores = seguidoresList;
@@ -61,6 +66,34 @@ class _PerfilState extends State<Perfil> {
         title: const Text('Perfil Usuario'),
         centerTitle: true,
         automaticallyImplyLeading: false,
+        actions: [
+          PopupMenuButton(
+            icon: Icon(Icons.menu),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                child: ListTile(
+                  leading: Icon(Icons.settings),
+                  title: Text('Configuración'),
+                  onTap: () {
+                    // Aquí puedes navegar a la pantalla de configuración
+                  },
+                ),
+              ),
+              
+              PopupMenuItem(
+                child: ListTile(
+                  leading: Icon(Icons.logout),
+                  title: Text('Cerrar Sesión'),
+                  onTap: () async {
+                    await FirebaseAuth.instance.signOut();
+                    Navigator.of(context)
+                        .pushNamedAndRemoveUntil('/', (route) => false);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -70,7 +103,8 @@ class _PerfilState extends State<Perfil> {
             CircleAvatar(
               backgroundImage: userData != null
                   ? NetworkImage(userData!['FtPerfil'])
-                  : const AssetImage('assets/images/placeholder_image.jpg') as ImageProvider,
+                  : const AssetImage('assets/images/placeholder_image.jpg')
+                      as ImageProvider,
               radius: 50,
             ),
             const SizedBox(height: 20),
@@ -100,7 +134,8 @@ class _PerfilState extends State<Perfil> {
             const SizedBox(height: 20),
             SizedBox(
               height: 400,
-              child: MostrarPublicacion(UserId: userData != null ? userData!['UserId'] : ''),
+              child: MostrarPublicacion(
+                  UserId: userData != null ? userData!['UserId'] : ''),
             ),
             const SizedBox(height: 20),
           ],
@@ -144,18 +179,19 @@ class _PerfilState extends State<Perfil> {
   void _navigateToSeguidores() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SeguidoresScreen(seguidores: seguidores)),
+      MaterialPageRoute(
+          builder: (context) => SeguidoresScreen(seguidores: seguidores)),
     );
   }
 
   void _navigateToSiguiendo() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SiguiendoScreen(siguiendo: siguiendo)),
+      MaterialPageRoute(
+          builder: (context) => SiguiendoScreen(siguiendo: siguiendo)),
     );
   }
 }
-
 
 class SeguidoresScreen extends StatelessWidget {
   final List<String> seguidores;
@@ -173,13 +209,18 @@ class SeguidoresScreen extends StatelessWidget {
               itemCount: seguidores.length,
               itemBuilder: (context, index) {
                 return FutureBuilder<DocumentSnapshot>(
-                  future: FirebaseFirestore.instance.collection('usuarios').doc(seguidores[index]).get(),
+                  future: FirebaseFirestore.instance
+                      .collection('usuarios')
+                      .doc(seguidores[index])
+                      .get(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
                     if (!snapshot.hasData) {
-                      return const Center(child: Text('No se encontró información del usuario'));
+                      return const Center(
+                          child:
+                              Text('No se encontró información del usuario'));
                     }
                     var user = snapshot.data!;
                     return UsuarioItem(
@@ -188,7 +229,8 @@ class SeguidoresScreen extends StatelessWidget {
                         'FtPerfil': user['FtPerfil'],
                       },
                       seSiguen: false, // Define los estados según corresponda
-                      esSeguido: true, // En este caso, están siguiendo al usuario
+                      esSeguido:
+                          true, // En este caso, están siguiendo al usuario
                       teSigue: false, // En este caso, el usuario no te sigue
                       onPressed: (bool seguir) {
                         // Aquí puedes manejar la lógica de seguimiento/deseguimiento
@@ -219,13 +261,18 @@ class SiguiendoScreen extends StatelessWidget {
               itemCount: siguiendo.length,
               itemBuilder: (context, index) {
                 return FutureBuilder<DocumentSnapshot>(
-                  future: FirebaseFirestore.instance.collection('usuarios').doc(siguiendo[index]).get(),
+                  future: FirebaseFirestore.instance
+                      .collection('usuarios')
+                      .doc(siguiendo[index])
+                      .get(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
                     if (!snapshot.hasData) {
-                      return const Center(child: Text('No se encontró información del usuario'));
+                      return const Center(
+                          child:
+                              Text('No se encontró información del usuario'));
                     }
                     var user = snapshot.data!;
                     return UsuarioItem(
@@ -234,7 +281,8 @@ class SiguiendoScreen extends StatelessWidget {
                         'FtPerfil': user['FtPerfil'],
                       },
                       seSiguen: true, // Define los estados según corresponda
-                      esSeguido: false, // En este caso, no estás siguiendo al usuario
+                      esSeguido:
+                          false, // En este caso, no estás siguiendo al usuario
                       teSigue: true, // En este caso, el usuario te sigue
                       onPressed: (bool seguir) {
                         // Aquí puedes manejar la lógica de seguimiento/deseguimiento
@@ -248,4 +296,3 @@ class SiguiendoScreen extends StatelessWidget {
     );
   }
 }
-  

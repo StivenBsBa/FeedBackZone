@@ -109,13 +109,7 @@ Future<void> enviarCorreoRecuperacion(String email) async {
   }
 }
 
-
-
-
 //Busmar y seguir amigo
-
-
-
 class BuscarSeguirAmigo {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -206,13 +200,6 @@ class BuscarSeguirAmigo {
     return result.docs.map((doc) => doc['seguidorId'].toString()).toList();
   }
 }
-
-
-
-
-
-
-
 
 
 //manejar informacion del usaurio autenticado
